@@ -1,0 +1,240 @@
+when storing the input "1" on the key labeled "1" in profile "1" (no/black LED):
+
+SET_REPORT:
+	01 a5 21 5a de 10 00 00 # command line
+	29 00 00 00 # esc key (rebindable?)
+	1e 00 00 00 # 1
+	1f 00 00 00 # 2
+	20 00 00 00 # 3
+	00 00 00 00 # padding?
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a ?e 10 01 00 # command line
+	21 00 00 00 # 4
+	06 00 00 00 # C
+	2b 00 00 00 # Tab
+	22 00 00 00 # 5
+	00 00 00 00 # padding
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 02 00 # command line
+	23 00 00 00 # 6
+	24 00 00 00 # 7
+	25 00 00 00 # 8
+	05 00 00 00 # B
+	00 00 00 00 # padding
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 03 00 # command line
+	e1 00 00 00 # LShift
+	26 00 00 00 # 9
+	27 00 00 00 # 0 (zero)
+	2d 00 00 00 # -/_
+	00 00 00 00 # padding
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 04 00 # command line
+	26 00 00 ff # Function key (Fn)
+	27 00 00 00 # 0 (zero)
+	2d 00 00 00 # -/_
+IS SPACE MISSING FROM THIS LINE?! it should be "2c 00 00 00"
+	00 00 00 00 # padding
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 05 00 # command line
+	19 00 00 00 # V
+	10 00 00 00 # M
+	e2 00 00 00 # LAlt
+	62 00 00 00 # Numpad 0
+	00 00 00 00 # padding
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 06 00 # command line
+	09 00 00 ff # Unknown (LSB?)
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 07 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 08 00 # command line
+	00 00 00 00 # 
+	00 00 00 00 # 
+	00 00 00 00 #
+	09 00 00 ff # Unknown (LSB?) - again?
+	00 00 00 00 # 
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 09 00 # command line
+	0a 00 00 ff # unknown
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 0a 00 # command line
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 0b 00 # command line
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 0c 00 # command line
+	0a 0a 0a 0a
+	0a 00 00 00
+	01 00 00 00
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 0d 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 0e 00 # command line
+	00 00 00 00 #
+	00 00 00 00 # 
+	00 00 00 00 # 
+	00 00 74 00 #
+	00 00 00 00 #
+	00 00 00 00 #
+
+SET_REPORT:
+	01 a5 21 5a de 10 0f 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 10 00 # command line
+	29 00 00 00 # Esc (?)
+	... and padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 11 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 12 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 13 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 14 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 15 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 16 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 17 00 # command line
+	... pure padding
+
+SET_REPORT:
+	01 a5 21 5a de 10 18 00 # command line
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	09 00 00 ff # Function key ?
+	00 00 00 00
+	00 00 00 00
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 19 00 # command line
+	0a 00 00 ff
+	... and padding
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1a 00 # command line
+	... pure padding
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1b 00 # command line
+	... pure padding
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1c 00 # command line
+	0a 0a 0a 0a
+	0a 00 00 00
+	01 01 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1d 00 # command line
+	... pure padding
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1e 00 # command line
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 74 00
+	00 00 00 00
+	00 00 00 00
+
+
+SET_REPORT:
+	01 a5 21 5a de 10 1f 00 # command line
+	... pure padding
+
+
+SET_REPORT:
+	01 a5 22 5a dd 10 00 00 # command line
+	... pure padding
+
+
+GET_REPORT:
+	01 af 22 5a dd 10 00 00 # read back?
+	aa 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	23 0d 00 00
+	e9 02 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+
+SET_REPORT:
+	01 a5 23 5a dc 10 00 00
+	... and padding
+
+GET_REPORT:
+	01 a5 23 5a dc 10 00 00 # read back from SET_REPORT?
+	aa 00 00 00
+	00 00 00 00
+	00 00 00 00
+	b9 02 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
+	00 00 00 00
