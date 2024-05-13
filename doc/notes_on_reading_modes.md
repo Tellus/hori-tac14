@@ -28,18 +28,17 @@ you're currently working on the alternate set of keys or not.
   - Keys labeled `16` to `22`
   - The thumb button, next to the stick
   - *An empty key - possibly padding*
+  - In A+K mode, `0x090000FF` is returned for LSB (see the gamepad notes).
   - In Keyboard only mode, the following are also returned:
     - LSB (default: `F`)
     - Up
     - Down
     - Right
     - Left
-    - Right-Up
+    - Right-Up - all diagonals are set automatically as composites by the GUI.
     - Right-Down
-  - In A+K mode, `F` is returned for LSB, but it is unknown if these are related.
-- Page `2`:
-  - Left-Down
-  - Left-Up
+    - Left-Down
+    - Left-Up
   - *An empty key - possibly padding*
   - An unknown field (`0x090000FF` on both modes, profile 8 and 1)
   - An unknown field (`0x0A0000FF` on both modes, profile 8 and 1) -- this could possibly also be deadzone?
