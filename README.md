@@ -38,23 +38,27 @@ just reboot your computer). Next time the HORI is plugged in, you should have us
 ## Loose checklist
 
 - [ ] Analyze USB traffic
-  - [ ] Reading
+  - [ ] Reading (*observe* known values coming back over the wire)
     - [x] Basic (one-off)
-    - [ ] Differentiation
+    - [x] Differentiation
       - [x] Page
       - [x] Profile
-      - [ ] A+K or K mode
-      - [ ] Alternate key functions (Fn+)
-    - [ ] Stick configuration (deadzones + can LSB input be rebound?)
-  - [ ] Writing
+      - [x] A+K or K mode
+      - [x] Alternate key functions (Fn+)
+    - [x] Stick deadzones
+    - [ ] Stick type in A+K mode
+      - [ ] Left
+      - [ ] Right
+      - [ ] dpad
+      - [x] Keyboard (same as for Keyboard only)
+  - [ ] Writing (*observe* that values are written over the wire)
     - [x] Keyboard inputs (including composite)
     - [x] LED backlight
     - [ ] Gamepad inputs
-    
   - [ ] Value types
     - [x] Single key
     - [x] Composite (modifier + key)
-    - [ ] Gamepad input
+    - [x] Gamepad input
     - [ ] LED backlight
     - [ ] ... others?
 - [ ] Python library
