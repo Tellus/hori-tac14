@@ -1,5 +1,6 @@
 -- Source: https://www.win.tue.nl/~aeb/linux/kbd/scancodes-14.html
-scancodes = { "NoEventError", "ErrorRollOverError", -- "POSTFailError",
+scancodes = { "NoEventError", -- "ErrorRollOverError",
+  "POSTFailError",
   "ErrorUndefinedError",
   "A",
   "B",
