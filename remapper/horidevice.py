@@ -4,42 +4,102 @@ from usb.core import Device
 from constants import VENDOR_ID, PRODUCT_ID, KEYBOARD_ONLY_MODE, ANALOG_MODE
 import keys
 
-# TODO: should this be a namedtuple or SimpleNamespace instead?
+class KeyConfig(object):
+  """
+  Representation of a single key configuration (4 bytes).
+  """
+
+  def __init__(self, raw_config: bytes):
+    if len(raw_config) != 4:
+      raise ValueError(f'Input bytes must have length 4')
+    
+    self.__raw = raw_config
+
+  def is_gamepad_key(self):
+    return self.__raw[-1] == 0xFF
+  
+  def __str__(self) -> str:
+    return f'{keys.get_key_for_bytes(self.__raw)} ({str(self.__raw)})'
+
 class ThumbstickConfig(object):
   """
   Structured representation of the mapping of the thumbstick in keyboard-only
   mode.
   """
-  def __init__(self, keys_as_bytes: list[list[int]] | list[str]) -> None:
+
+  def __init__(self, keys_as_bytes: list[bytes]) -> None:
     # This is possibly the ugliest copy list expression I've ever seen.
     self.__raw_source = keys_as_bytes.copy() if keys_as_bytes[0] is str else [[inner_key for inner_key in key] for key in keys_as_bytes]
 
-    self.up = keys_as_bytes[0]
-    self.down = keys_as_bytes[1]
-    self.left = keys_as_bytes[2]
-    self.right = keys_as_bytes[3]
-    self.up_right = keys_as_bytes[4]
-    self.down_right = keys_as_bytes[5]
-    self.down_left = keys_as_bytes[6]
-    self.up_left = keys_as_bytes[7]
+    if len(keys_as_bytes) != 8:
+      raise ValueError('Input sequence must contain exactly 8 elements')
+
+    if any([len(arr) != 4 for arr in keys_as_bytes]):
+      raise ValueError('All input arguments must be of length 4')
+
+    self.up = KeyConfig(keys_as_bytes[0])
+    self.down = KeyConfig(keys_as_bytes[1])
+    self.left = KeyConfig(keys_as_bytes[2])
+    self.right = KeyConfig(keys_as_bytes[3])
+    self.up_right = KeyConfig(keys_as_bytes[4])
+    self.down_right = KeyConfig(keys_as_bytes[5])
+    self.down_left = KeyConfig(keys_as_bytes[6])
+    self.up_left = KeyConfig(keys_as_bytes[7])
 
   def as_name_dict(self):
     if self.up is str:
       return self
     else:
-      return ThumbstickConfig([keys.get_key_for_bytes(k) for k in self.__raw_source])
+      return {
+        'up': str(self.up),
+        'down': str(self.down),
+        'left': str(self.left),
+        'right': str(self.right),
+        'up_right': str(self.up_right),
+        'down_right': str(self.down_right),
+        'up_left': str(self.up_left),
+        'down_left': str(self.down_left),
+      }
     
   def __str__(self) -> str:
     return str({
-      'up': self.up,
-      'down': self.down,
-      'left': self.left,
-      'right': self.right,
-      'up_right': self.up_right,
-      'down_right': self.down_right,
-      'down_left': self.down_left,
-      'up_left': self.up_left,
+      'up': str(self.up),
+      'down': str(self.down),
+      'left': str(self.left),
+      'right': str(self.right),
+      'up_right': str(self.up_right),
+      'down_right': str(self.down_right),
+      'down_left': str(self.down_left),
+      'up_left': str(self.up_left),
     })
+
+class KeypadConfig(object):
+  """
+  Structured representation of the keypad's numbered keys (1-22).
+  """
+  
+  def __init__(self, keys: list[bytes]):
+    if len(keys) != 22:
+      raise ValueError('Input sequence must contain exactly 8 elements')
+
+    if any([len(arr) != 4 for arr in keys]):
+      raise ValueError('All input arguments must be of length 4')
+    
+    self.__raw_source = keys.copy() if keys[0] is str else [[inner_key for inner_key in key] for key in keys]
+
+    self.__keys = [KeyConfig(k) for k in self.__raw_source]
+
+  def __getitem__(self, index: int) -> bytes:
+    if 0 < index <= 22:
+      return self.__raw_source[index]
+    else:
+      raise IndexError('Only keys between 1 and 22 (inclusive) are supported.')
+
+  def get_as_strings(self, index: int) -> list[str]:
+    return keys.get_key_for_bytes(self[index])
+  
+  def __str__(self):
+    return str(self.__keys)
 
 class HoriDevice(object):
   """
@@ -158,17 +218,26 @@ class HoriDevice(object):
     CLOSE_READ = bytearray.fromhex(f'01a5125aed{mode}{profile}00')
     self.__set_report(CLOSE_READ)
 
-    # returnvalue = [(result[i : i + 4]) for i in range(0, len(result), 4)]
+    # return {
+    #   'escape': keys_0[0],
+    #   'keys': keys_0[1:] + keys_1[0:7],
+    #   'left_thumbstick_button': keys_1[8],
+    #   'thumbstick_keys': ThumbstickConfig(keys_1[10:18] + keys_2[:2]) if mode == KEYBOARD_ONLY_MODE else None, # 8 keys, for each cardinal direction. Only in keyboard mode.
 
-    # return returnvalue
+    #   'alt_escape': alt_keys_0[0],
+    #   'alt_keys': alt_keys_0[1:] + alt_keys_1[0:7],
+    #   'alt_left_thumbstick_button': alt_keys_1[8],
+    #   'alt_thumbstick_keys': ThumbstickConfig(alt_keys_1[10:18] + alt_keys_2[:2]) if mode == KEYBOARD_ONLY_MODE else None, # 8 keys, for each cardinal direction. Only in keyboard mode.
+    # }
+
     return {
       'escape': keys_0[0],
-      'keys': keys_0[1:] + keys_1[0:7],
+      'keys': KeypadConfig(keys_0[1:] + keys_1[0:7]),
       'left_thumbstick_button': keys_1[8],
       'thumbstick_keys': ThumbstickConfig(keys_1[10:18] + keys_2[:2]) if mode == KEYBOARD_ONLY_MODE else None, # 8 keys, for each cardinal direction. Only in keyboard mode.
 
       'alt_escape': alt_keys_0[0],
-      'alt_keys': alt_keys_0[1:] + alt_keys_1[0:7],
+      'alt_keys': KeypadConfig(alt_keys_0[1:] + alt_keys_1[0:7]),
       'alt_left_thumbstick_button': alt_keys_1[8],
       'alt_thumbstick_keys': ThumbstickConfig(alt_keys_1[10:18] + alt_keys_2[:2]) if mode == KEYBOARD_ONLY_MODE else None, # 8 keys, for each cardinal direction. Only in keyboard mode.
     }

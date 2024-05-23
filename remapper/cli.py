@@ -28,12 +28,12 @@ def print_profile_func(args) -> None:
   # all_keys = [i for i in all_keys if i[0] != 0 and i[1] == 0 and i[2] == 0]
   # print(all_keys['keys'])
   print('Normal keys:')
-  print([keys.get_key_for_bytes(k) for k in all_keys['keys']])
+  print(str(all_keys['keys']))
   print('Normal thumbstick keys:')
   print(all_keys['thumbstick_keys'].as_name_dict())
   # print([keys.get_key_for_bytes(k) for k in all_keys['thumbstick_keys']])
   print('Alternate keys:')
-  print([keys.get_key_for_bytes(k) for k in all_keys['alt_keys']])
+  print(str(all_keys['alt_keys']))
   print('Alternate thumbstick keys:')
   # print([keys.get_key_for_bytes(k) for k in all_keys['alt_thumbstick_keys']])
 
@@ -43,9 +43,9 @@ def print_profile_func(args) -> None:
   # Filter away zero values or unknown value types.
   # all_keys = [i for i in all_keys if i[0] != 0 and i[1] == 0 and i[2] == 0]
   print('Normal keys:')
-  print([keys.get_key_for_bytes(k) for k in all_keys['keys']])
+  print(str(all_keys['keys']))
   print('Alternate keys:')
-  print([keys.get_key_for_bytes(k) for k in all_keys['alt_keys']])
+  print(str(all_keys['alt_keys']))
 
 parser = argparse.ArgumentParser(
   prog='Hori14Remapper',

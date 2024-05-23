@@ -5,9 +5,14 @@ import os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-scancodes = []
-modifiers = []
-gamepad = []
+scancodes: list[str] = []
+
+# At what index do the "true" modifiers start? The offset is used when
+# converting a scancode from/to the matching list index.
+MODIFIER_OFFSET = 224
+
+modifiers: list[str] = []
+gamepad: list[str] = []
 
 with open(os.path.join(__location__, 'scancodes.yml')) as input_stream:
   parsed = yaml.safe_load(input_stream)
@@ -15,15 +20,25 @@ with open(os.path.join(__location__, 'scancodes.yml')) as input_stream:
   modifiers = parsed['modifiers']
   gamepad = parsed['gamepad']
 
+def get_byte_for_keyname(name: str) -> bytes:
+  try:
+    return scancodes.index(name)
+  except:
+    # Not found in regular keys. Try modifiers.
+    return modifiers.index(name) + MODIFIER_OFFSET
+
+def get_byte_for_gamepad_button(name: str) -> bytes:
+  return gamepad.index(name)
+
 def get_name_for_scancode(scancode: int) -> str:
   """
   Given a USB scancode, returns the string representation of the key.
   """
-  if scancode < 224:
+  if scancode < MODIFIER_OFFSET:
     return scancodes[scancode]
   else:
-    return modifiers[scancode - 224]
-  
+    return modifiers[scancode - MODIFIER_OFFSET]
+
 def get_key_for_bytes(bytes: list[int]) -> str | list[str]:
   """
   Given a sequence of four integers (bytes), returns the human-readable name of
