@@ -1,1 +1,6 @@
+# We don't want to add bytecode to git. It's quickly generated on run, anyway.
 __pycache__
+
+# Don't commit build files or dist stuff.
+build
+dist
