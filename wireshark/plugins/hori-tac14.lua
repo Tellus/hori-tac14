@@ -57,9 +57,6 @@ local key_0_field = ProtoField.uint8(
   base.HEX
 )
 
--- Contains all previous requests that we've dissected. This is such a performance killer...
-local all_requests = {}
-
 local string_field = ProtoField.string("hori_tac14.debug", "Debug string", base.ASCII)
 
 local protocol_fields = {
@@ -116,7 +113,7 @@ end
 
 hori_p.fields = protocol_fields
 
-local function set_report_request_dissector(request_cache, data, buffer, pinfo, tree)
+local function set_report_request_dissector(data, buffer, pinfo, tree)
   pinfo.cols.protocol = hori_p.name
 
   if data.type ~= ftypes.BYTES then
@@ -138,10 +135,6 @@ local function set_report_request_dissector(request_cache, data, buffer, pinfo, 
   subtree:add(keyboard_mode_field, mode_and_profile_range)
   subtree:add(profile_field, mode_and_profile_range)
   subtree:add(page_field, page_range)
-
-  request_cache.page = page_range:bytes():int()
-
-  print("REQUEST page " .. request_cache.page)
 end
 
 -- Used to recognize received packets that essentially acknowledge the previously
@@ -149,7 +142,7 @@ end
 local ACK_PREFIX = ByteArray.new("01 A5")
 local COMMAND_READ_MODE = ByteArray.new("01a5105aef0000")
 
-local function get_report_response_dissector(request, buffer, pinfo, tree)
+local function get_report_response_dissector(buffer, pinfo, tree)
   pinfo.cols.protocol = hori_p.name
 
   local data = buffer:range(28)
@@ -212,15 +205,15 @@ local function get_report_response_dissector(request, buffer, pinfo, tree)
       if key_scancodes[1] ~= "0" then
         key_subtree:add(proto_fields[1], single_key_range)
       end
-  
+
       if key_scancodes[2] ~= "0" then
         key_subtree:add(proto_fields[2], single_key_range)
       end
-  
+
       if key_scancodes[3] ~= "0" then
         key_subtree:add(proto_fields[3], single_key_range)
       end
-      
+
       if key_scancodes[4] ~= "0" then
         key_subtree:add(proto_fields[4], single_key_range)
       end
@@ -228,66 +221,73 @@ local function get_report_response_dissector(request, buffer, pinfo, tree)
   end
 end
 
-local function set_report_response_dissector(cached_request, buffer, pinfo, tree)
-  print("NYI: set_report_response_dissector")
+local function set_report_response_dissector(buffer, pinfo, tree)
+  -- print("NYI: set_report_response_dissector")
 end
 
-local function get_report_request_dissector(cached_request, buffer, pinfo, tree)
-  print("NYI: get_report_request_dissector")
+local function get_report_request_dissector(buffer, pinfo, tree)
+  -- print("NYI: get_report_request_dissector")
 end
 
+-- The actual dissector function.
 function hori_p.dissector(buffer, pinfo, tree)
+  -- Ignore anything without a buffer.
   local length = buffer:len()
   if length == 0 then return end
 
-  -- Looks like data should be ftypes.BYTES
-  local data = data_fragment_field()
+  -- If this yields a value, it's because we're dissecting a SET_REPORT request.
   local request_type = usbhid_setup_request_field()
+  -- The combination of destination and request_type is enough to determine which
+  -- subdissector we want to use.
+  -- If we have a request type (i.e. a SET_REPORT), we're only interested in outbound
+  -- communication (dst == "host"). If we do NOT have a request type and the
+  -- packet is *inbound*, we assume that it's the response to GET_REPORT (the
+  -- other packet type we want to inspect).
+  -- In other words: we want to dissect outbound SET_REPORT and inbound GET_REPORT.
+  -- Anything else is just noise to us.
   local dst = usb_dst_field()
 
-  local irp_id = irp_id_field()
+  -- Dissectors are supposed to be stateless, so we can't directly query what happened
+  -- in a previous packet... but we *want* to. We'd like to be able to match the
+  -- parameters (data fragment) of a SET_REQUEST to the matching data incoming from a
+  -- later GET_REQUEST. This is just to make it easier to piece together the
+  -- command/response parts of the protocol. Instead of looking at the first and last
+  -- entry in a four-packet series (SET_REPORT request/response, GET_REPORT request/response),
+  -- it would be much easier to read it as "given this SET_REPORT, we got this result"
+  -- in the last packet's details.
+  -- This wall of text is just to say that irp_id is a unique id for 
+  
+  -- The two types of packets we're interested in is SET_REPORT request and GET_REPORT response.
+  -- Unfortunately, the only direct way of querying packet type is in the "Info" column, which
+  -- we can't query from within a dissector. That means we can't directly determine which sort
+  -- of inbound request we're looking at.
+  -- One solution is to store outbound IRP_IDs globally, and query them every time we get an
+  -- inbound. It's leaky, it's probably slow, but it's a very direct way to being sure.
+  -- The alternative is a bit more fragile. Buffer length. Inbound SET_REPORT is 28 bytes,
+  -- while inbound GET_REPORT is 92 bytes. It's a much cheaper and simpler check - but fragile.
 
-  local rid = irp_id.range():bytes():tohex()
-
-  if not request_type then
-    if dst.value ~= "host" then
-      print("ERROR! Missing request type but destination is outbound?", dst.value)
-      return
+  if dst.value == "host" then
+    if length == 28 then
+      -- Inbound response to SET_REPORT
+      return set_report_response_dissector(buffer, pinfo, tree)
+    elseif length == 92 then
+      -- Inbound response to GET_REPORT
+      return get_report_response_dissector(buffer, pinfo, tree)
     end
-    -- print("Missing request type means response? Checking for rid ", rid)
-
-    local cached_request = all_requests[rid]
-
-    if cached_request then
-      print("Found some cached data", cached_request.request_type)
-
-      if cached_request.request_type == SET_REPORT_TYPE then
-        return set_report_response_dissector(cached_request, buffer, pinfo, tree)
-      elseif cached_request.request_type == GET_REPORT_TYPE then
-        print("calling get_report_response_dissector() for response to ", cached_request.request_type)
-        return get_report_response_dissector(cached_request, buffer, pinfo, tree)
-      end
-    end
-
-    return
   end
 
-  if dst.value ~= "host" then
-    local cached_data = {}
-
-    cached_data.request_type = request_type.value
-
-    all_requests[rid] = cached_data
-
+  if not request_type then
+    print("Skipping outbound packet without request_type")
+  elseif dst.value ~= "host" then
     -- Outbound
     if request_type.value == SET_REPORT_TYPE then
       -- SET_REPORT requests have some setup data. We use this information to store some state for the response package.
 
-      print("Saved request data in table", rid, cached_data, all_requests[rid])
-  
-      return set_report_request_dissector(cached_data, data, buffer, pinfo, tree)
-    elseif request_type.value == GET_REPORT_TYPE then
-      return get_report_request_dissector(cached_request, buffer, pinfo, tree)
+      local data = data_fragment_field()
+
+      return set_report_request_dissector(data, buffer, pinfo, tree)
+    -- elseif request_type.value == GET_REPORT_TYPE then
+    --   return get_report_request_dissector(cached_request, buffer, pinfo, tree)
     end
   end
   -- elseif dst.value == "host" then
