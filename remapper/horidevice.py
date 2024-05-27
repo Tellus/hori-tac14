@@ -99,7 +99,7 @@ class KeypadConfig(object):
     return keys.get_key_for_bytes(self[index])
   
   def __str__(self):
-    return str(self.__keys)
+    return str([str(k) for k in self.__keys])
 
 class HoriDevice(object):
   """
