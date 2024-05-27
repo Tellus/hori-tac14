@@ -1,43 +1,19 @@
-import yaml
+from constants import GAMEPAD_CODES, USB_SCANCODES
 
-# https://stackoverflow.com/questions/4060221/how-to-reliably-open-a-file-in-the-same-directory-as-the-currently-running-scrip
-import os
-__location__ = os.path.realpath(
-    os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
-scancodes: list[str] = []
-
-# At what index do the "true" modifiers start? The offset is used when
-# converting a scancode from/to the matching list index.
-MODIFIER_OFFSET = 224
-
-modifiers: list[str] = []
-gamepad: list[str] = []
-
-with open(os.path.join(__location__, 'scancodes.yml')) as input_stream:
-  parsed = yaml.safe_load(input_stream)
-  scancodes = parsed['normal']
-  modifiers = parsed['modifiers']
-  gamepad = parsed['gamepad']
+reversed_usb_scancodes = dict(zip(USB_SCANCODES.values(), USB_SCANCODES.keys()))
+reversed_gamepad_codes = dict(zip(GAMEPAD_CODES.values(), GAMEPAD_CODES.keys()))
 
 def get_byte_for_keyname(name: str) -> bytes:
-  try:
-    return scancodes.index(name)
-  except:
-    # Not found in regular keys. Try modifiers.
-    return modifiers.index(name) + MODIFIER_OFFSET
+  return reversed_usb_scancodes[name]
 
 def get_byte_for_gamepad_button(name: str) -> bytes:
-  return gamepad.index(name)
+  return reversed_gamepad_codes[name]
 
 def get_name_for_scancode(scancode: int) -> str:
   """
   Given a USB scancode, returns the string representation of the key.
   """
-  if scancode < MODIFIER_OFFSET:
-    return scancodes[scancode]
-  else:
-    return modifiers[scancode - MODIFIER_OFFSET]
+  return USB_SCANCODES[scancode]
 
 def get_key_for_bytes(bytes: list[int]) -> str | list[str]:
   """
@@ -57,7 +33,7 @@ def get_key_for_bytes(bytes: list[int]) -> str | list[str]:
     if bytes[0] == 38:
       return 'Fn'
 
-    return gamepad[bytes[0]]
+    return GAMEPAD_CODES[bytes[0]]
   
   translated = [get_name_for_scancode(keycode) for keycode in bytes[:-1] if keycode != 0]
 
