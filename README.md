@@ -61,6 +61,15 @@ It's expected that there will be a CLI, GUI, and library version available.
 ## Loose checklist
 
 - [ ] Analyze USB traffic
+  - [x] Protocol command structure (7 bytes) (I use "_" for the unused half of an octet/byte for a given point)
+      - `0x01` (always)
+      - `0xa5` (always)
+      - `0x1_` for READ `0x_` for WRITE
+      - `0x_0` for START, `0x_1` for any operation before END, `0x_2` and then another with `0x_3` for WRITE END, and just `0x_2` for READ END
+      - The complement for bytes 1 and 2. `0xa5` -> `0x5a`, and e.g. `0x12` -> `0xed`
+      - `0x1_` for A+K, `0x0_` for keyboard only.
+      - `0x_0` to `0x_7`, profile
+      - `0x00` to `0x1f` for virtual page (0-7 during READ; 0-31 during WRITE)
   - [ ] Reading (*observe* known values coming back over the wire)
     - [x] Basic (one-off)
     - [x] Differentiation
